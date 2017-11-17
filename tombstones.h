@@ -1,5 +1,4 @@
 template <class T>
-
 class Pointer {
     
 public:
@@ -19,7 +18,8 @@ public:
     
     Pointer<T>& operator=(const Pointer<T>&);   // assignment
     
-    friend void free(Pointer<T>&);              // delete pointed-at object
+    template <class F>
+    friend void free<F>(Pointer<F>&);              // delete pointed-at object
     
         // This is essentially the inverse of the new inside the call to
         // the bootstrapping constructor.
@@ -35,3 +35,4 @@ public:
         // false iff Pointer is null and int is zero
 
 };
+
