@@ -1,0 +1,17 @@
+-copy class in C++
+-Foo reference is the signature
+-handle pointer double --> potential corner case
+-2 de-references; catches are important
+-tombstone does not need to be a template, can make a separate struct if need
+-Create another class for the tombstone
+
+
+-Sort tombstones by address, when we want to discount a tombstone, we change its address beyond the scope of what our list/sorter looks for (address space)
+-Abstract pointer and want it to be associated to the memory
+-get it working as a regular pointer; once done, then modify to add the tombstone functionality
+-should be straightforward to implement artificial pointer
+-free not a member fxn, want to do free pointer
+-if defined outside of template, void free, then any private members of free, you cannot access; friend ->pretty much an explanation of what "friend" means. (solves this permission level)
+-return a pointer to memmory you want to access
+-dereference in the method to get to the tombstone
+-approach on a per method basis, thinking as a whole will make much more difficult
