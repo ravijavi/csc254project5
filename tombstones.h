@@ -1,38 +1,66 @@
+/////////////////////////////////////////////////////////////////////////////
+// tombstones.h, expected interface for CS254 assignment 5
+/////////////////////////////////////////////////////////////////////////////
+
+#if !defined(__TOMBSTONES_H__)
+#define __TOMBSTONES_H__
+
+#define NULL 0
+
+template <class T> class Pointer;
+template <class T> void free(Pointer<T>& obj);
+
 template <class T>
 class Pointer {
-    
+private:
+    T* pointer;
+
 public:
+    // default constructor
+    Pointer<T>() {
+        pointer = NULL;
+    }
     
-    Pointer<T>();                               // default constructor
+    // copy construtor
+    Pointer<T>(Pointer<T>&p) {
+        pointer = &p;
+    }
     
-    Pointer<T>(Pointer<T>&);                    // copy constructor
-    
-    Pointer<T>(T*);                             // bootstrapping constructor
-    
+    // bootstrapping constructor
+    Pointer<T>(T* p) {
+        pointer = p
+    }
         // argument should always be a call to new
-    ~Pointer<T>();                              // destructor
+        
+        
+    // destructor
+    ~Pointer<T>() {
+        ~pointer();
+    }
     
-    T& operator*() const;                       // deferencing
+    // dereferencing
+    T& operator*() const;
     
-    T* operator->() const;                      // field dereferencing
+    // field dereferencing
+    T* operator->() const;
     
-    Pointer<T>& operator=(const Pointer<T>&);   // assignment
+    // assignment
+    Pointer<T>& operator=(const Pointer<T>&);
     
-    template <class F>
-    friend void free<F>(Pointer<F>&);              // delete pointed-at object
-    
+    // delete pointed-at object
+    friend void free<T>(Pointer<T>&);
         // This is essentially the inverse of the new inside the call to
         // the bootstrapping constructor.
+    
+    
     // equality comparisons:
     bool operator==(const Pointer<T>&) const;
-
     bool operator!=(const Pointer<T>&) const;
-    
     bool operator==(const int) const;
         // true iff Pointer is null and int is zero
-        
     bool operator!=(const int) const;
         // false iff Pointer is null and int is zero
-
 };
 
+
+#endif // __TOMBSTONES_H__
