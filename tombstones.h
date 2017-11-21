@@ -18,10 +18,12 @@ public:
     T* ptr;
     int refcount;
     Tombstone<T>() {
+        std::cout << "new empty tombstone\n";
         ptr = 0;
         refcount = 0;
     }
     Tombstone<T>(T* p) {
+        std::cout << "new nonempty tombstone\n";
         ptr = p;
         refcount = 1;
     }
@@ -102,6 +104,7 @@ public:
     }
     // true iff Pointer is null and int is zero
     bool operator==(const int rhs) const {
+        std::cout << "== with int rhs\n";
         return tomb->ptr == 0 && rhs == 0;
     }
     //friend bool operator==(const int lhs, Pointer<T>&rhs) {
