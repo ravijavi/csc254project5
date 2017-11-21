@@ -8,13 +8,19 @@
 #include <iostream>
 template <class T> class Tombstone;
 template <class T> class Pointer;
-template <class T> void free(Pointer<T>& obj);
+template <class T> void free(Pointer<T>&pointer) {
+    std::cout << "free called\n";
+}
 
 template<class T>
 class Tombstone {
 public:
-    const T* ptr;
+    T* ptr;
     int refcount;
+    Tombstone<T>(T* p) {
+        ptr = p;
+        refcount = 1;
+    }
 };
 
 template <class T>
@@ -33,7 +39,7 @@ public:
     // copy construtor
     Pointer<T>(Pointer<T>&pointer) {
         std::cout << "copy constructor\n";
-        tomb = pointer->tomb;
+        tomb = pointer.tomb;
         tomb->refcount++;
     }
     
@@ -57,7 +63,7 @@ public:
     // dereferencing
     T& operator*() const {
         try {
-            return tomb->ptr;
+            return *(tomb->ptr);
         } catch (const char* msg) {
             std::cerr << msg << "\n";
             std::cerr << "dereferenced a null pointer\n\n";
@@ -70,11 +76,12 @@ public:
     // assignment
     Pointer<T>& operator=(const Pointer<T>&rhs) {
         this->tomb->refcount--;
-        this->tomb = rhs->tomb;
-        rhs->tomb->refcount++;
+        this->tomb = rhs.tomb;
+        rhs.tomb->refcount++;
     }
     
     // delete pointed-at object
+    // this isn't a declaration, it just declares the outside one as a friend
     friend void free<T>(Pointer<T>&);
         // This is essentially the inverse of the new inside the call to
         // the bootstrapping constructor.
@@ -82,7 +89,7 @@ public:
     
     // equality comparisons:
     bool operator==(const Pointer<T>&rhs) const {
-        return tomb->ptr == rhs->tomb->ptr; // TODO: is this comparing the address, not the value?
+        return tomb->ptr == rhs.tomb->ptr; // TODO: is this comparing the address, not the value?
     }
     
     bool operator!=(const Pointer<T>&rhs) const {
