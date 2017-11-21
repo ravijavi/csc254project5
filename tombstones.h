@@ -17,6 +17,10 @@ class Tombstone {
 public:
     T* ptr;
     int refcount;
+    Tombstone<T>() {
+        ptr = 0;
+        refcount = 0;
+    }
     Tombstone<T>(T* p) {
         ptr = p;
         refcount = 1;
@@ -32,8 +36,7 @@ public:
     // default constructor
     Pointer<T>() {
         std::cout << "default constructor\n";
-        tomb->ptr = 0;
-        tomb->refcount = 0;
+        tomb = new Tombstone<T>();
     }
     
     // copy construtor
@@ -46,8 +49,7 @@ public:
     // bootstrapping constructor
     Pointer<T>(T* p) {
         std::cout << "bootstrapping constructor\n";
-        tomb->ptr = p;
-        tomb->refcount = 1; // this is the only reference to this pointer
+        tomb = new Tombstone<T>(p);
     }
         // argument should always be a call to new
         
@@ -93,7 +95,7 @@ public:
     }
     
     bool operator!=(const Pointer<T>&rhs) const {
-        return tomb->ptr != rhs->tomb->ptr; // TODO: same as above
+        return tomb->ptr != rhs.tomb->ptr; // TODO: same as above
     }
     // true iff Pointer is null and int is zero
     bool operator==(const int rhs) const {
