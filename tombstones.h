@@ -65,6 +65,7 @@ public:
     // dereferencing
     T& operator*() const {
         try {
+            std::cout << "dereference: " << *(tomb->ptr) << "\n";
             return *(tomb->ptr);
         } catch (const char* msg) {
             std::cerr << msg << "\n";
@@ -95,6 +96,8 @@ public:
     }
     
     bool operator!=(const Pointer<T>&rhs) const {
+        std::cout << "left:  " << tomb->ptr << "\n";
+        std::cout << "right: " << rhs.tomb->ptr << "\n";
         return tomb->ptr != rhs.tomb->ptr; // TODO: same as above
     }
     // true iff Pointer is null and int is zero
@@ -108,6 +111,7 @@ public:
     
     // false iff Pointer is null and int is zero
     bool operator!=(const int rhs) const {
+        std::cout << "!= with int rhs\n";
         return tomb->ptr != 0 || rhs != 0;
     }
     //friend bool operator!=(const int lhs, Pointer<T>&rhs) {
