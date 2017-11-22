@@ -12,7 +12,7 @@ template <class T> class Tombstone;
 template <class T> class Pointer;
 template <class T> void free(Pointer<T>&pointer) {
     if (pointer.tomb->ptr != NIL) {
-        std::cout << "deleted\n";
+        //std::cout << "deleted\n";
         delete pointer.tomb->ptr;
         pointer.tomb->ptr = NIL;
     } else {
@@ -48,13 +48,13 @@ private:
 public:
     // default constructor
     Pointer<T>() {
-        std::cout << "default constructor\n";
+        //std::cout << "default constructor\n";
         tomb = new Tombstone<T>();
     }
     
     // copy construtor
     Pointer<T>(Pointer<T>&pointer) {
-        std::cout << "copy constructor\n";
+        //std::cout << "copy constructor\n";
         if (pointer.tomb->ptr == NIL) {
             std::cerr << "ERROR: copied a dereferenced pointer\n";
             std::exit(-1);
@@ -65,7 +65,7 @@ public:
     
     // bootstrapping constructor
     Pointer<T>(T* p) {
-        std::cout << "bootstrapping constructor\n";
+        //std::cout << "bootstrapping constructor\n";
         tomb = new Tombstone<T>(p);
     }
         // argument should always be a call to new
@@ -76,7 +76,7 @@ public:
         //std::cout << "destructor executed, " << "value=" << (tomb->ptr == 0 ? "NULL" : std::to_string(*(tomb->ptr))) << "\n";
         
         tomb->refcount--;
-        std::cout << "new refcount: " << tomb->refcount << "\n";
+        //std::cout << "new refcount: " << tomb->refcount << "\n";
         // delete once the reference count reaches zero
         if (tomb->refcount <= 0) { // TODO: replace with a call to free()?
             if (tomb->ptr != NIL) { // check if memory was freed properly
@@ -97,7 +97,7 @@ public:
         }
         try {
             //std::cout << "dereference: " << *(tomb->ptr) << "\n";
-            std::cout << "dangling?  " << (tomb->ptr == NIL) << "\n";
+            //std::cout << "dangling?  " << (tomb->ptr == NIL) << "\n";
             return *(tomb->ptr);
         } catch (const char* msg) {
             std::cerr << msg << "\n";
@@ -118,7 +118,7 @@ public:
     
     // assignment (=)
     Pointer<T>& operator=(const Pointer<T>&rhs) {
-        std::cout << "assignment\n";
+        //std::cout << "assignment\n";
         //std::cout << "rhs:  " << *(rhs.tomb->ptr) << "\n";
         this->tomb->refcount--;
         // check if this would set refcount to 0 and create a memory leak
