@@ -10,7 +10,7 @@ template <class T> class Tombstone;
 template <class T> class Pointer;
 template <class T> void free(Pointer<T>&pointer) {
     if (pointer.tomb->ptr != 0) {
-        //std::cout << "deleted\n";
+        std::cout << "deleted\n";
         delete pointer.tomb->ptr;
         pointer.tomb->ptr = 0;
     } else {
@@ -46,20 +46,20 @@ private:
 public:
     // default constructor
     Pointer<T>() {
-        //std::cout << "default constructor\n";
+        std::cout << "default constructor\n";
         tomb = new Tombstone<T>();
     }
     
     // copy construtor
     Pointer<T>(Pointer<T>&pointer) {
-        //std::cout << "copy constructor\n";
+        std::cout << "copy constructor\n";
         tomb = pointer.tomb;
         tomb->refcount++;
     }
     
     // bootstrapping constructor
     Pointer<T>(T* p) {
-        //std::cout << "bootstrapping constructor\n";
+        std::cout << "bootstrapping constructor\n";
         tomb = new Tombstone<T>(p);
     }
         // argument should always be a call to new
@@ -67,11 +67,12 @@ public:
         
     // destructor
     ~Pointer<T>() {
-        //std::cout << "destructor executed\n";
+        std::cout << "destructor executed, " << "value=" << (tomb->ptr == 0 ? "NULL" : std::to_string(*(tomb->ptr))) << "\n";
+        
         tomb->refcount--;
-        //std::cout << "new refcount: " << tomb->refcount << "\n";
+        std::cout << "new refcount: " << tomb->refcount << "\n";
         // delete once the reference count reaches zero
-        if (tomb->refcount == 0) { // TODO: replace with a call to free()?
+        if (tomb->refcount <= 0) { // TODO: replace with a call to free()?
             if (tomb->ptr != 0) { // check if memory was freed properly
                 std::cerr << "ERROR: memory not freed\n";
                 std::exit(-1);
@@ -109,6 +110,12 @@ public:
         //std::cout << "assignment\n";
         //std::cout << "rhs:  " << *(rhs.tomb->ptr) << "\n";
         this->tomb->refcount--;
+        // check if this would set refcount to 0 and create a memory leak
+        if (this->tomb->refcount <= 0) {
+            std::cerr << "ERROR: memory leak from not freeing memory before assignment\n";
+            std::exit(-1);
+        }
+        
         this->tomb = rhs.tomb;
         //std::cout <<"this: " << *(tomb->ptr) << "\n";
         rhs.tomb->refcount++;
