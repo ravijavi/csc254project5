@@ -15,8 +15,12 @@ template <class T> void free(Pointer<T>&pointer) {
         //std::cout << "deleted\n";
         delete pointer.tomb->ptr;
         pointer.tomb->ptr = NIL;
+        pointer.tomb->freed = true;
+    } else if (pointer.tomb->freed) {
+        std::cerr << "ERROR: attempted to double-delete a pointer\n";
+        std::exit(-1);
     } else {
-        std::cerr << "ERROR: attempted to free an invalid pointer\n";
+        std::cerr << "ERROR: attempted to free an uninitialized pointer\n";
         std::exit(-1);
     }
     // check for double deletion of pointers
@@ -28,15 +32,18 @@ class Tombstone {
 public:
     T* ptr;
     int refcount;
+    bool freed; // to differentiate between NULL when a null pointer
     Tombstone<T>() {
         //std::cout << "new empty tombstone\n";
         ptr = NIL;
         refcount = 0;
+        freed = false;
     }
     Tombstone<T>(T* p) {
         //std::cout << "new nonempty tombstone\n";
         ptr = p;
         refcount = 1;
+        freed = false;
     }
 };
 
@@ -55,7 +62,7 @@ public:
     // copy construtor
     Pointer<T>(Pointer<T>&pointer) {
         //std::cout << "copy constructor\n";
-        if (pointer.tomb->ptr == NIL) {
+        if (pointer.tomb->freed) {
             std::cerr << "ERROR: copied a dereferenced pointer\n";
             std::exit(-1);
         }
@@ -79,7 +86,7 @@ public:
         //std::cout << "new refcount: " << tomb->refcount << "\n";
         // delete once the reference count reaches zero
         if (tomb->refcount <= 0) { // TODO: replace with a call to free()?
-            if (tomb->ptr != NIL) { // check if memory was freed properly
+            if (tomb->ptr != NIL && !tomb->freed) { // check if memory was freed properly
                 std::cerr << "ERROR: memory not freed\n";
                 std::exit(-1);
             }
@@ -122,7 +129,7 @@ public:
         //std::cout << "rhs:  " << *(rhs.tomb->ptr) << "\n";
         this->tomb->refcount--;
         // check if this would set refcount to 0 and create a memory leak
-        if (this->tomb->refcount <= 0) {
+        if (this->tomb->refcount <= 0 && (!this->tomb->freed && this->tomb->ptr != NIL)) {
             std::cerr << "ERROR: memory leak from not freeing memory before assignment\n";
             std::exit(-1);
         }
