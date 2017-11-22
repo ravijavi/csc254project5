@@ -14,7 +14,7 @@ template <class T> void free(Pointer<T>&pointer) {
         delete pointer.tomb->ptr;
         pointer.tomb->ptr = 0;
     } else {
-        std::cerr << "ERROR: double pointer deletion attempt\n";
+        std::cerr << "ERROR: attempted to free an invalid pointer\n";
         std::exit(-1);
     }
     // check for double deletion of pointers
@@ -69,8 +69,13 @@ public:
     ~Pointer<T>() {
         //std::cout << "destructor executed\n";
         tomb->refcount--;
+        //std::cout << "new refcount: " << tomb->refcount << "\n";
         // delete once the reference count reaches zero
         if (tomb->refcount == 0) { // TODO: replace with a call to free()?
+            if (tomb->ptr != 0) { // check if memory was freed properly
+                std::cerr << "ERROR: memory not freed\n";
+                std::exit(-1);
+            }
             delete tomb->ptr;
             delete tomb;
         }
@@ -90,7 +95,14 @@ public:
     }
     
     // field dereferencing
-    T* operator->() const;
+    T* operator->() const {
+        try {
+            return tomb->ptr;
+        } catch (const char* msg) {
+            std::cerr << "ERROR: field dereferenced a null pointer\n";
+            std::exit(-1);
+        }
+    }
     
     // assignment (=)
     Pointer<T>& operator=(const Pointer<T>&rhs) {
