@@ -16,6 +16,8 @@ foo7: tombstones.o
 	g++ -ggdb -o foo7 examples/foo7.cpp tombstones.o
 foo8: tombstones.o
 	g++ -ggdb -o foo8 examples/foo8.cpp tombstones.o
+fooX: tombstones.o
+	g++ -ggdb -o fooX examples/fooX.cpp tombstones.o
 
 
 clean:

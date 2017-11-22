@@ -73,7 +73,7 @@ public:
         
     // destructor
     ~Pointer<T>() {
-        std::cout << "destructor executed, " << "value=" << (tomb->ptr == 0 ? "NULL" : std::to_string(*(tomb->ptr))) << "\n";
+        //std::cout << "destructor executed, " << "value=" << (tomb->ptr == 0 ? "NULL" : std::to_string(*(tomb->ptr))) << "\n";
         
         tomb->refcount--;
         std::cout << "new refcount: " << tomb->refcount << "\n";
