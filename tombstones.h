@@ -9,7 +9,7 @@
 template <class T> class Tombstone;
 template <class T> class Pointer;
 template <class T> void free(Pointer<T>&pointer) {
-    std::cout << "free called\n";
+    //std::cout << "free called\n";
 }
 
 template<class T>
@@ -18,12 +18,12 @@ public:
     T* ptr;
     int refcount;
     Tombstone<T>() {
-        std::cout << "new empty tombstone\n";
+        //std::cout << "new empty tombstone\n";
         ptr = 0;
         refcount = 0;
     }
     Tombstone<T>(T* p) {
-        std::cout << "new nonempty tombstone\n";
+        //std::cout << "new nonempty tombstone\n";
         ptr = p;
         refcount = 1;
     }
@@ -37,20 +37,20 @@ private:
 public:
     // default constructor
     Pointer<T>() {
-        std::cout << "default constructor\n";
+        //std::cout << "default constructor\n";
         tomb = new Tombstone<T>();
     }
     
     // copy construtor
     Pointer<T>(Pointer<T>&pointer) {
-        std::cout << "copy constructor\n";
+        //std::cout << "copy constructor\n";
         tomb = pointer.tomb;
         tomb->refcount++;
     }
     
     // bootstrapping constructor
     Pointer<T>(T* p) {
-        std::cout << "bootstrapping constructor\n";
+        //std::cout << "bootstrapping constructor\n";
         tomb = new Tombstone<T>(p);
     }
         // argument should always be a call to new
@@ -58,16 +58,20 @@ public:
         
     // destructor
     ~Pointer<T>() {
-        std::cout << "destructor executed\n";
+        //std::cout << "destructor executed\n";
         tomb->refcount--;
-        // TODO: do something when refcount is down to zero?
-        delete tomb->ptr;
+        // delete once the reference count reaches zero
+        if (tomb->refcount == 0) {
+            delete tomb->ptr;
+            delete tomb;
+        }
+        
     }
     
     // dereferencing
     T& operator*() const {
         try {
-            std::cout << "dereference: " << *(tomb->ptr) << "\n";
+            //std::cout << "dereference: " << *(tomb->ptr) << "\n";
             return *(tomb->ptr);
         } catch (const char* msg) {
             std::cerr << msg << "\n";
@@ -78,10 +82,13 @@ public:
     // field dereferencing
     T* operator->() const;
     
-    // assignment
+    // assignment (=)
     Pointer<T>& operator=(const Pointer<T>&rhs) {
+        //std::cout << "assignment\n";
+        //std::cout << "rhs:  " << *(rhs.tomb->ptr) << "\n";
         this->tomb->refcount--;
         this->tomb = rhs.tomb;
+        //std::cout <<"this: " << *(tomb->ptr) << "\n";
         rhs.tomb->refcount++;
     }
     
@@ -94,17 +101,18 @@ public:
     
     // equality comparisons:
     bool operator==(const Pointer<T>&rhs) const {
+        //std::cout << "== with pointers\n";
         return tomb->ptr == rhs.tomb->ptr; // TODO: is this comparing the address, not the value?
     }
     
     bool operator!=(const Pointer<T>&rhs) const {
-        std::cout << "left:  " << tomb->ptr << "\n";
-        std::cout << "right: " << rhs.tomb->ptr << "\n";
+        //std::cout << "left:  " << tomb->ptr << "\n";
+        //std::cout << "right: " << rhs.tomb->ptr << "\n";
         return tomb->ptr != rhs.tomb->ptr; // TODO: same as above
     }
     // true iff Pointer is null and int is zero
     bool operator==(const int rhs) const {
-        std::cout << "== with int rhs\n";
+        //std::cout << "== with int rhs\n";
         return tomb->ptr == 0 && rhs == 0;
     }
     //friend bool operator==(const int lhs, Pointer<T>&rhs) {
@@ -114,7 +122,7 @@ public:
     
     // false iff Pointer is null and int is zero
     bool operator!=(const int rhs) const {
-        std::cout << "!= with int rhs\n";
+        //std::cout << "!= with int rhs\n";
         return tomb->ptr != 0 || rhs != 0;
     }
     //friend bool operator!=(const int lhs, Pointer<T>&rhs) {
