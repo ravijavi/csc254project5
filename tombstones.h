@@ -5,14 +5,16 @@
 #if !defined(__TOMBSTONES_H__)
 #define __TOMBSTONES_H__
 
+#define NIL 0
+
 #include <iostream>
 template <class T> class Tombstone;
 template <class T> class Pointer;
 template <class T> void free(Pointer<T>&pointer) {
-    if (pointer.tomb->ptr != 0) {
+    if (pointer.tomb->ptr != NIL) {
         std::cout << "deleted\n";
         delete pointer.tomb->ptr;
-        pointer.tomb->ptr = 0;
+        pointer.tomb->ptr = NIL;
     } else {
         std::cerr << "ERROR: attempted to free an invalid pointer\n";
         std::exit(-1);
@@ -28,7 +30,7 @@ public:
     int refcount;
     Tombstone<T>() {
         //std::cout << "new empty tombstone\n";
-        ptr = 0;
+        ptr = NIL;
         refcount = 0;
     }
     Tombstone<T>(T* p) {
@@ -53,6 +55,10 @@ public:
     // copy construtor
     Pointer<T>(Pointer<T>&pointer) {
         std::cout << "copy constructor\n";
+        if (pointer.tomb->ptr == NIL) {
+            std::cerr << "ERROR: copied a dereferenced pointer\n";
+            std::exit(-1);
+        }
         tomb = pointer.tomb;
         tomb->refcount++;
     }
@@ -73,7 +79,7 @@ public:
         std::cout << "new refcount: " << tomb->refcount << "\n";
         // delete once the reference count reaches zero
         if (tomb->refcount <= 0) { // TODO: replace with a call to free()?
-            if (tomb->ptr != 0) { // check if memory was freed properly
+            if (tomb->ptr != NIL) { // check if memory was freed properly
                 std::cerr << "ERROR: memory not freed\n";
                 std::exit(-1);
             }
@@ -85,8 +91,13 @@ public:
     
     // dereferencing
     T& operator*() const {
+        if (tomb->ptr == NIL) {
+            std::cerr << "ERROR: dangling pointer dereferenced\n";
+            std::exit(-1);
+        }
         try {
             //std::cout << "dereference: " << *(tomb->ptr) << "\n";
+            std::cout << "dangling?  " << (tomb->ptr == NIL) << "\n";
             return *(tomb->ptr);
         } catch (const char* msg) {
             std::cerr << msg << "\n";
@@ -107,7 +118,7 @@ public:
     
     // assignment (=)
     Pointer<T>& operator=(const Pointer<T>&rhs) {
-        //std::cout << "assignment\n";
+        std::cout << "assignment\n";
         //std::cout << "rhs:  " << *(rhs.tomb->ptr) << "\n";
         this->tomb->refcount--;
         // check if this would set refcount to 0 and create a memory leak
@@ -142,21 +153,21 @@ public:
     // true iff Pointer is null and int is zero
     bool operator==(const int rhs) const {
         //std::cout << "== with int rhs\n";
-        return tomb->ptr == 0 && rhs == 0;
+        return tomb->ptr == NIL && rhs == 0;
     }
-    //friend bool operator==(const int lhs, Pointer<T>&rhs) {
-    //    return rhs.pointer == 0 && lhs == 0;
-    //}
+    friend bool operator==(const int lhs, Pointer<T>&rhs) {
+        return rhs.pointer == NIL && lhs == 0;
+    }
     
     
     // false iff Pointer is null and int is zero
     bool operator!=(const int rhs) const {
         //std::cout << "!= with int rhs\n";
-        return tomb->ptr != 0 || rhs != 0;
+        return tomb->ptr != NIL || rhs != 0;
     }
-    //friend bool operator!=(const int lhs, Pointer<T>&rhs) {
-    //    return rhs.pointer != 0 || lhs != 0;
-    //}
+    friend bool operator!=(const int lhs, Pointer<T>&rhs) {
+        return rhs.pointer != NIL || lhs != 0;
+    }
 };
 
 
