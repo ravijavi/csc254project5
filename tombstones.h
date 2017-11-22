@@ -9,7 +9,16 @@
 template <class T> class Tombstone;
 template <class T> class Pointer;
 template <class T> void free(Pointer<T>&pointer) {
-    //std::cout << "free called\n";
+    if (pointer.tomb->ptr != 0) {
+        //std::cout << "deleted\n";
+        delete pointer.tomb->ptr;
+        pointer.tomb->ptr = 0;
+    } else {
+        std::cerr << "ERROR: double pointer deletion attempt\n";
+        std::exit(-1);
+    }
+    // check for double deletion of pointers
+    
 }
 
 template<class T>
@@ -61,7 +70,7 @@ public:
         //std::cout << "destructor executed\n";
         tomb->refcount--;
         // delete once the reference count reaches zero
-        if (tomb->refcount == 0) {
+        if (tomb->refcount == 0) { // TODO: replace with a call to free()?
             delete tomb->ptr;
             delete tomb;
         }
@@ -76,6 +85,7 @@ public:
         } catch (const char* msg) {
             std::cerr << msg << "\n";
             std::cerr << "dereferenced a null pointer\n\n";
+            std::exit(-1);
         }
     }
     
